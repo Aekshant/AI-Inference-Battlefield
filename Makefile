@@ -122,3 +122,6 @@ test: ## unit tests (Go gateway, worker slot accounting)
 	cd gateway && go test ./...
 	cd controller && go vet ./...
 	docker run --rm -v $(PWD)/worker:/w -w /w battlefield/worker:dev python test_slots.py
+
+docs: ## rebuild docs/AI-Inference-Battlefield.pdf (HLD + LLD) with headless Chrome
+	python3 docs/build_pdf.py
