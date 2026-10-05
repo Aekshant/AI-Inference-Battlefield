@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata: { name: controller, namespace: battlefield }
+spec:
+  type: NodePort
+  selector: { app: controller }
+  ports: [{ name: http, port: 8082, nodePort: 30082 }]
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: controller-state, namespace: battlefield }
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 16Mi } }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: controller, namespace: battlefield }
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: controller } }
+  template:
+    metadata:
+      labels: { app: controller }
+      annotations: { prometheus.io/scrape: "true", prometheus.io/port: "8082" }
+    spec:
+      serviceAccountName: controller
+      securityContext: { fsGroup: 65532 }
+      volumes: [{ name: state, persistentVolumeClaim: { claimName: controller-state } }]
+      containers:
+        - name: controller
+          image: battlefield/controller:dev
+          imagePullPolicy: Never
+          ports: [{ containerPort: 8082 }]
+          env:
+            - { name: GATEWAY_URL, value: "http://gateway.battlefield:8080" }
+            - { name: PROMETHEUS_URL, value: "http://prometheus.battlefield:9090" }
+            - { name: STATE_FILE, value: /data/controller.json }
+          volumeMounts: [{ name: state, mountPath: /data }]
+          readinessProbe: { httpGet: { path: /healthz, port: 8082 }, periodSeconds: 5 }
+          resources:
+            requests: { cpu: 50m, memory: 32Mi }
+            limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: controller, namespace: battlefield }
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { name: canary-scaler, namespace: battlefield }
+rules:
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets]
+    verbs: [get]
+  - apiGroups: [apps]
+    resources: [deployments/scale, statefulsets/scale]
+    resourceNames: [gpu-canary, gpu]
+    verbs: [get, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { name: controller-canary-scaler, namespace: battlefield }
+subjects: [{ kind: ServiceAccount, name: controller, namespace: battlefield }]
+roleRef: { kind: Role, name: canary-scaler, apiGroup: rbac.authorization.k8s.io }

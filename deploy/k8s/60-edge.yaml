@@ -1,0 +1,25 @@
+# 2 pods x 25 simulated devices = 50 edge devices, split into rings by hash:
+# canary ~10%, early ~30%, broad ~60%.
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: edge, namespace: battlefield }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: edge } }
+  template:
+    metadata:
+      labels: { app: edge }
+      annotations: { prometheus.io/scrape: "true", prometheus.io/port: "8000" }
+    spec:
+      containers:
+        - name: edge
+          image: battlefield/edge:dev
+          imagePullPolicy: Never
+          ports: [{ containerPort: 8000 }]
+          env:
+            - { name: POD_NAME, valueFrom: { fieldRef: { fieldPath: metadata.name } } }
+            - { name: DEVICES, value: "25" }
+            - { name: HUB_URL, value: "http://controller.battlefield:8082" }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 256Mi }

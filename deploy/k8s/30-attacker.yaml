@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: attacker, namespace: battlefield }
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { name: pod-killer, namespace: battlefield }
+rules:
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list, delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { name: attacker-pod-killer, namespace: battlefield }
+subjects: [{ kind: ServiceAccount, name: attacker, namespace: battlefield }]
+roleRef: { kind: Role, name: pod-killer, apiGroup: rbac.authorization.k8s.io }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: attacker, namespace: battlefield }
+spec:
+  type: NodePort
+  selector: { app: attacker }
+  ports: [{ name: http, port: 8081, nodePort: 30081 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: attacker, namespace: battlefield }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: attacker } }
+  template:
+    metadata:
+      labels: { app: attacker }
+      annotations: { prometheus.io/scrape: "true", prometheus.io/port: "8081" }
+    spec:
+      serviceAccountName: attacker
+      containers:
+        - name: attacker
+          image: battlefield/attacker:dev
+          imagePullPolicy: Never
+          ports: [{ containerPort: 8081 }]
+          env:
+            - { name: GATEWAY_URL, value: "http://gateway.battlefield:8080" }
+          resources:
+            requests: { cpu: 200m, memory: 96Mi }
+            limits: { cpu: "2", memory: 768Mi }

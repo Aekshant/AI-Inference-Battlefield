@@ -1,0 +1,44 @@
+# Canary pool: model v2. It is deliberately worse (Attack #5):
+# +80% latency, -10% accuracy, +40% cost.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpu-canary-headless
+  namespace: battlefield
+spec:
+  clusterIP: None
+  selector: { app: gpu-canary }
+  ports: [{ name: http, port: 9000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-canary
+  namespace: battlefield
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: gpu-canary } }
+  template:
+    metadata:
+      labels: { app: gpu-canary, pool: canary }
+      annotations: { prometheus.io/scrape: "true", prometheus.io/port: "9000" }
+    spec:
+      terminationGracePeriodSeconds: 2
+      containers:
+        - name: worker
+          image: battlefield/worker:dev
+          imagePullPolicy: Never
+          ports: [{ containerPort: 9000 }]
+          env:
+            - { name: NODE_ID, valueFrom: { fieldRef: { fieldPath: metadata.name } } }
+            - { name: POOL, value: canary }
+            - { name: MODEL_VERSION, value: v2 }
+            - { name: MODE, value: synthetic }
+            - { name: LATENCY_FACTOR, value: "1.8" }
+            - { name: ORACLE_ACCURACY, value: "0.85" }
+            - { name: COST_PER_1K_TOKENS, value: "0.14" }
+          readinessProbe: { httpGet: { path: /ready, port: 9000 }, periodSeconds: 2, failureThreshold: 2 }
+          livenessProbe: { httpGet: { path: /health, port: 9000 }, periodSeconds: 5, failureThreshold: 3 }
+          resources:
+            requests: { cpu: 100m, memory: 96Mi }
+            limits: { cpu: "1", memory: 384Mi }

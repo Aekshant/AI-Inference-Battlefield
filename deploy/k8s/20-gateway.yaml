@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: gateway, namespace: battlefield }
+---
+# Read-only: the gateway discovers GPUs from EndpointSlices (faster than DNS).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: { name: endpoint-reader, namespace: battlefield }
+rules:
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: { name: gateway-endpoint-reader, namespace: battlefield }
+subjects: [{ kind: ServiceAccount, name: gateway, namespace: battlefield }]
+roleRef: { kind: Role, name: endpoint-reader, apiGroup: rbac.authorization.k8s.io }
+---
+# Defenses, tenants, canary weight and operator overrides survive restarts.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: gateway-state, namespace: battlefield }
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 16Mi } }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: battlefield
+spec:
+  type: NodePort
+  selector: { app: gateway }
+  ports: [{ name: http, port: 8080, nodePort: 30080 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: battlefield
+spec:
+  replicas: 1 # state lives in one process (and one RWO volume)
+  strategy: { type: Recreate }
+  selector: { matchLabels: { app: gateway } }
+  template:
+    metadata:
+      labels: { app: gateway }
+      annotations: { prometheus.io/scrape: "true", prometheus.io/port: "8080" }
+    spec:
+      serviceAccountName: gateway
+      securityContext: { fsGroup: 65532 }
+      containers:
+        - name: gateway
+          image: battlefield/gateway:dev
+          imagePullPolicy: Never
+          ports: [{ containerPort: 8080 }]
+          env:
+            - { name: POOLS, value: "stable=gpu-headless.battlefield.svc.cluster.local:9000,canary=gpu-canary-headless.battlefield.svc.cluster.local:9000" }
+            - { name: DEFENSE_PRESET, value: naive } # only used when there is no saved state
+            - { name: STATE_FILE, value: /data/gateway.json }
+          volumeMounts: [{ name: state, mountPath: /data }]
+          readinessProbe: { httpGet: { path: /healthz, port: 8080 }, periodSeconds: 3 }
+          livenessProbe: { httpGet: { path: /healthz, port: 8080 }, periodSeconds: 10 }
+          resources:
+            requests: { cpu: 200m, memory: 64Mi }
+            limits: { cpu: "2", memory: 512Mi }
+      volumes: [{ name: state, persistentVolumeClaim: { claimName: gateway-state } }]

@@ -1,0 +1,45 @@
+# Stable pool: 3 simulated GPUs (gpu-0, gpu-1, gpu-2) serving model v1.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpu-headless
+  namespace: battlefield
+spec:
+  clusterIP: None
+  selector: { app: gpu }
+  ports: [{ name: http, port: 9000 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gpu
+  namespace: battlefield
+spec:
+  serviceName: gpu-headless
+  replicas: 3
+  podManagementPolicy: Parallel
+  selector: { matchLabels: { app: gpu } }
+  template:
+    metadata:
+      labels: { app: gpu, pool: stable }
+      annotations: { prometheus.io/scrape: "true", prometheus.io/port: "9000" }
+    spec:
+      terminationGracePeriodSeconds: 2
+      containers:
+        - name: worker
+          image: battlefield/worker:dev
+          imagePullPolicy: Never
+          ports: [{ containerPort: 9000 }]
+          env:
+            - { name: NODE_ID, valueFrom: { fieldRef: { fieldPath: metadata.name } } }
+            - { name: POOL, value: stable }
+            - { name: MODEL_VERSION, value: v1 }
+            - { name: MODE, value: synthetic }
+            - { name: OLLAMA_URL, value: "http://ollama.battlefield:11434" }
+            - { name: SLOTS, value: "32" }
+            - { name: KV_BUDGET_TOKENS, value: "65536" }
+          readinessProbe: { httpGet: { path: /ready, port: 9000 }, periodSeconds: 2, failureThreshold: 2 }
+          livenessProbe: { httpGet: { path: /health, port: 9000 }, periodSeconds: 5, failureThreshold: 3 }
+          resources:
+            requests: { cpu: 100m, memory: 96Mi }
+            limits: { cpu: "1", memory: 384Mi }

@@ -1,0 +1,40 @@
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of France?\nA:", "expected": "paris"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Japan?\nA:", "expected": "tokyo"}
+{"prompt": "Answer with one word or number only.\nQ: What is 7 times 8?\nA:", "expected": "56"}
+{"prompt": "Answer with one word or number only.\nQ: What is the chemical symbol for gold?\nA:", "expected": "au"}
+{"prompt": "Answer with one word or number only.\nQ: How many days are in a leap year?\nA:", "expected": "366"}
+{"prompt": "Answer with one word or number only.\nQ: What planet is known as the red planet?\nA:", "expected": "mars"}
+{"prompt": "Answer with one word or number only.\nQ: What is the largest ocean on Earth?\nA:", "expected": "pacific"}
+{"prompt": "Answer with one word or number only.\nQ: What is the boiling point of water in Celsius at sea level?\nA:", "expected": "100"}
+{"prompt": "Answer with one word or number only.\nQ: Who wrote Romeo and Juliet?\nA:", "expected": "shakespeare"}
+{"prompt": "Answer with one word or number only.\nQ: What gas do plants absorb from the air?\nA:", "expected": "co2"}
+{"prompt": "Answer with one word or number only.\nQ: What is 12 squared?\nA:", "expected": "144"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Italy?\nA:", "expected": "rome"}
+{"prompt": "Answer with one word or number only.\nQ: What is the square root of 81?\nA:", "expected": "9"}
+{"prompt": "Answer with one word or number only.\nQ: How many continents are there?\nA:", "expected": "7"}
+{"prompt": "Answer with one word or number only.\nQ: What is the hardest natural substance?\nA:", "expected": "diamond"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Canada?\nA:", "expected": "ottawa"}
+{"prompt": "Answer with one word or number only.\nQ: What is 15 + 27?\nA:", "expected": "42"}
+{"prompt": "Answer with one word or number only.\nQ: What language has the most native speakers?\nA:", "expected": "mandarin"}
+{"prompt": "Answer with one word or number only.\nQ: What is the freezing point of water in Fahrenheit?\nA:", "expected": "32"}
+{"prompt": "Answer with one word or number only.\nQ: What is the largest planet in the solar system?\nA:", "expected": "jupiter"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Germany?\nA:", "expected": "berlin"}
+{"prompt": "Answer with one word or number only.\nQ: How many sides does a hexagon have?\nA:", "expected": "6"}
+{"prompt": "Answer with one word or number only.\nQ: What is the smallest prime number?\nA:", "expected": "2"}
+{"prompt": "Answer with one word or number only.\nQ: What is H2O commonly called?\nA:", "expected": "water"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Australia?\nA:", "expected": "canberra"}
+{"prompt": "Answer with one word or number only.\nQ: What is 100 divided by 4?\nA:", "expected": "25"}
+{"prompt": "Answer with one word or number only.\nQ: Which organ pumps blood?\nA:", "expected": "heart"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Spain?\nA:", "expected": "madrid"}
+{"prompt": "Answer with one word or number only.\nQ: How many minutes are in an hour?\nA:", "expected": "60"}
+{"prompt": "Answer with one word or number only.\nQ: What color do you get mixing blue and yellow?\nA:", "expected": "green"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Egypt?\nA:", "expected": "cairo"}
+{"prompt": "Answer with one word or number only.\nQ: What is 9 times 9?\nA:", "expected": "81"}
+{"prompt": "Answer with one word or number only.\nQ: What is the longest river in Africa?\nA:", "expected": "nile"}
+{"prompt": "Answer with one word or number only.\nQ: Which metal is liquid at room temperature?\nA:", "expected": "mercury"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of India?\nA:", "expected": "new delhi"}
+{"prompt": "Answer with one word or number only.\nQ: How many legs does a spider have?\nA:", "expected": "8"}
+{"prompt": "Answer with one word or number only.\nQ: What is 2 to the power of 10?\nA:", "expected": "1024"}
+{"prompt": "Answer with one word or number only.\nQ: What is the capital of Kenya?\nA:", "expected": "nairobi"}
+{"prompt": "Answer with one word or number only.\nQ: Which star is closest to Earth?\nA:", "expected": "sun"}
+{"prompt": "Answer with one word or number only.\nQ: How many bits are in a byte?\nA:", "expected": "8"}

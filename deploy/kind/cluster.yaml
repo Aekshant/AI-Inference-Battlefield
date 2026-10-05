@@ -1,0 +1,20 @@
+# 1 control-plane + 2 workers. NodePorts are mapped to 127.0.0.1 only,
+# so nothing in the battlefield is reachable from your LAN.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: battlefield
+# Host Docker uses cgroup v1; Kubernetes >=1.35 kubelets refuse it unless told otherwise.
+kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    failCgroupV1: false
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      - { containerPort: 30080, hostPort: 8080, listenAddress: "127.0.0.1" } # gateway
+      - { containerPort: 30081, hostPort: 8081, listenAddress: "127.0.0.1" } # attacker
+      - { containerPort: 30082, hostPort: 8082, listenAddress: "127.0.0.1" } # rollout controller
+      - { containerPort: 30090, hostPort: 9090, listenAddress: "127.0.0.1" } # prometheus
+      - { containerPort: 30030, hostPort: 3000, listenAddress: "127.0.0.1" } # grafana
+  - role: worker
+  - role: worker
